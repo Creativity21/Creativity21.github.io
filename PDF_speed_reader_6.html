@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF-lukija tekstityksellä</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-color: #f2f2f2;
+      --text-color: rgba(0, 0, 0, 1);
+      --card-bg: #ffffff;
+      --accent-color: #888;
+    }
+
+    body.dark-mode {
+      --bg-color: #121212;
+      --text-color: rgba(255, 255, 255, 1);
+      --card-bg: #1e1e1e;
+      --accent-color: #ccc;
+    }
+
+    body {
+      font-family: 'Lexend', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    #pdfInput {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #themeToggle {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      background-color: var(--accent-color);
+      border: none;
+      color: #fff;
+      transition: transform 0.1s ease;
+    }
+    #themeToggle:hover {
+      transform: translateY(2px);
+    }
+
+    #pauseBtn {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      background-color: var(--accent-color);
+      border: none;
+      color: #fff;
+      transition: transform 0.1s ease;
+    }
+    #pauseBtn:hover {
+      transform: translateY(2px);
+    }
+
+    #textDisplay {
+      font-size: 36px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%);
+      padding: 20px;
+      background: var(--card-bg);
+      border-radius: 10px;
+      text-align: center;
+      max-width: 800px;
+      width: 80%;
+      color: var(--text-color);
+      user-select: none;
+      transition: background 0.3s, color 0.3s, opacity 0.3s;
+      opacity: 1;
+      white-space: nowrap;
+      overflow-wrap: normal;
+    }
+
+    #pageNumberDisplay {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      font-size: 18px;
+      color: var(--accent-color);
+      user-select: none;
+      z-index: 1000;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    #speedControl {
+      width: 450px;
+      height: 30px;
+      transform: scaleY(2.25);
+      cursor: pointer;
+    }
+
+    label[for="speedControl"] {
+      font-size: 18px;
+      margin-bottom: 5px;
+      color: var(--text-color);
+    }
+
+    .slider-controls {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--card-bg);
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      user-select: none;
+      max-width: 200px;
+    }
+
+    .slider-controls label {
+      font-size: 14px;
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      user-select: none;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    #pageSelector {
+      display: none;
+      position: absolute;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card-bg);
+      padding: 10px 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      user-select: none;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input[type="number"] {
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 16px;
+      width: 120px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: var(--accent-color);
+      color: #fff;
+      transition: transform 0.1s ease;
+      user-select: none;
+    }
+    button:hover {
+      transform: translateY(2px);
+    }
+  </style>
+</head>
+<body>
+
+  <input type="file" id="pdfInput" accept="application/pdf" />
+  <button id="themeToggle">Vaihda teema</button>
+  <button id="pauseBtn">⏸</button>
+
+  <div id="pageSelector">
+    <input type="number" id="pageInput" placeholder="Sivunumero" min="1" />
+    <button id="goToPageBtn">Aloita sivulta</button>
+  </div>
+
+  <div class="slider-controls">
+    <label for="redControl">Väri punainen:
+      <input type="range" id="redControl" min="0" max="255" value="0" />
+    </label>
+    <label for="greenControl">Väri vihreä:
+      <input type="range" id="greenControl" min="0" max="255" value="0" />
+    </label>
+    <label for="blueControl">Väri sininen:
+      <input type="range" id="blueControl" min="0" max="255" value="0" />
+    </label>
+    <label for="opacityControl">Tekstin läpinäkyvyys:
+      <input type="range" id="opacityControl" min="0" max="100" value="100" />
+    </label>
+    <label for="fontSizeControl">Tekstin koko:
+      <input type="range" id="fontSizeControl" min="16" max="150" value="36" />
+    </label>
+  </div>
+
+  <div id="textDisplay">Tähän ilmestyy teksti</div>
+  <div id="pageNumberDisplay">Sivu: 0</div>
+
+  <div class="controls">
+    <label for="speedControl">Nopeus: <span id="wpmValue">300</span> sanaa/min</label>
+    <input type="range" id="speedControl" min="200" max="500" value="300" />
+  </div>
+
+  <script src="pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
+    // Asetetaan tumma teema oletukseksi
+    document.body.classList.add('dark-mode');
+
+    const pdfInput = document.getElementById('pdfInput');
+    const textDisplay = document.getElementById('textDisplay');
+    const speedControl = document.getElementById('speedControl');
+    const wpmValue = document.getElementById('wpmValue');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const themeToggle = document.getElementById('themeToggle');
+    const pageSelector = document.getElementById('pageSelector');
+    const pageInput = document.getElementById('pageInput');
+    const goToPageBtn = document.getElementById('goToPageBtn');
+    const pageNumberDisplay = document.getElementById('pageNumberDisplay');
+
+    const redControl = document.getElementById('redControl');
+    const greenControl = document.getElementById('greenControl');
+    const blueControl = document.getElementById('blueControl');
+    const opacityControl = document.getElementById('opacityControl');
+    const fontSizeControl = document.getElementById('fontSizeControl');
+
+    let wordsWithPage = [];
+    let currentIndex = 0;
+    let intervalId = null;
+    let isPaused = false;
+    let wpm = 300;
+    let pdfDoc = null;
+    let totalPages = 0;
+
+    function displayWord() {
+      if (currentIndex >= wordsWithPage.length) {
+        clearInterval(intervalId);
+        textDisplay.textContent = 'Loppu';
+        return;
+      }
+      const { word, page } = wordsWithPage[currentIndex];
+      textDisplay.textContent = word;
+      pageNumberDisplay.textContent = `Sivu: ${page}`;
+      currentIndex++;
+    }
+
+    function startReading() {
+      clearInterval(intervalId);
+      const intervalMs = 60000 / wpm;
+      intervalId = setInterval(() => {
+        if (!isPaused) {
+          displayWord();
+        }
+      }, intervalMs);
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      pauseBtn.textContent = isPaused ? '▶️' : '⏸';
+    }
+
+    async function loadPDF(file) {
+      const fileReader = new FileReader();
+      fileReader.onload = async function () {
+        const typedArray = new Uint8Array(this.result);
+        pdfDoc = await pdfjsLib.getDocument(typedArray).promise;
+        totalPages = pdfDoc.numPages;
+
+        wordsWithPage = [];
+        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+          const page = await pdfDoc.getPage(pageNum);
+          const content = await page.getTextContent();
+          content.items.forEach(item => {
+            const text = item.str.trim();
+            if (text) {
+              text.split(/\s+/).forEach(word => {
+                wordsWithPage.push({ word, page: pageNum });
+              });
+            }
+          });
+        }
+
+        currentIndex = 0;
+        displayWord();
+        startReading();
+        pageSelector.style.display = 'flex';
+      };
+      fileReader.readAsArrayBuffer(file);
+    }
+
+    speedControl.addEventListener('input', () => {
+      wpm = Number(speedControl.value);
+      wpmValue.textContent = wpm;
+      if (!isPaused) {
+        startReading();
+      }
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      togglePause();
+    });
+
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+    });
+
+    pdfInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        loadPDF(e.target.files[0]);
+      }
+    });
+
+    goToPageBtn.addEventListener('click', () => {
+      let pageNum = Number(pageInput.value);
+      if (pageNum >= 1 && pageNum <= totalPages) {
+        const index = wordsWithPage.findIndex(wp => wp.page === pageNum);
+        if (index !== -1) {
+          currentIndex = index;
+          displayWord();
+          if (isPaused) togglePause();
+          startReading();
+        }
+      }
+    });
+
+    function updateTextStyles() {
+      const r = redControl.value;
+      const g = greenControl.value;
+      const b = blueControl.value;
+      const opacity = opacityControl.value / 100;
+      const fontSize = fontSizeControl.value;
+
+      textDisplay.style.color = `rgba(${r},${g},${b},${opacity})`;
+      textDisplay.style.fontSize = fontSize + 'px';
+    }
+
+    redControl.addEventListener('input', updateTextStyles);
+    greenControl.addEventListener('input', updateTextStyles);
+    blueControl.addEventListener('input', updateTextStyles);
+    opacityControl.addEventListener('input', updateTextStyles);
+    fontSizeControl.addEventListener('input', updateTextStyles);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePause();
+      }
+    });
+  </script>
+</body>
+</html>
