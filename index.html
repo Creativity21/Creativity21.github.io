@@ -11,11 +11,13 @@
       --text-color: rgba(0, 0, 0, 1);
       --card-bg: #ffffff;
       --accent-color: #888;
+      --error-bg: #ffecec;
+      --error-text: #b00020;
     }
 
     body.dark-mode {
       --bg-color: #121212;
-      --text-color: rgba(254, 255, 255, 1);
+      --text-color: rgba(255, 255, 255, 1);
       --card-bg: #1e1e1e;
       --accent-color: #ccc;
     }
@@ -31,43 +33,60 @@
 
     #pdfInput {
       position: absolute;
-      top: 20px;
-      left: 50%;
+      top: 10px;
+      left: 19%;
       transform: translateX(-50%);
+      z-index: 1200;
     }
 
     #themeToggle {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 20px;
+      top: 10px;
+      left: 10px;
+      padding: 4px 6px;
+      font-size: 6px;
+      border-radius: 10px;
       cursor: pointer;
       background-color: var(--accent-color);
       border: none;
       color: #fff;
       transition: transform 0.1s ease;
+      z-index: 1200;
     }
-    #themeToggle:hover {
-      transform: translateY(2px);
-    }
+    #themeToggle:hover { transform: translateY(2px); }
 
+    /* Ympyrämuotoinen pause/play -nappula vasemmassa alakulmassa */
     #pauseBtn {
       position: fixed;
-      bottom: 40px;
-      right: 40px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 20px;
-      cursor: pointer;
+      top: 10px;
+      left: 50%;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       background-color: var(--accent-color);
       border: none;
       color: #fff;
-      transition: transform 0.1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      transition: transform 0.1s ease, background-color 0.15s ease;
+      z-index: 1100;
     }
-    #pauseBtn:hover {
-      transform: translateY(2px);
+    #pauseBtn:hover { transform: translateY(2px); }
+
+    #pageNumberDisplay {
+      position: fixed;
+      bottom: 72px; /* näkyy hieman napin yläpuolella */
+      left: 20px;
+      font-size: 15px;
+      color: var(--accent-color);
+      user-select: none;
+      z-index: 1100;
+      background: transparent;
+      padding: 2px 6px;
+      border-radius: 6px;
     }
 
     #textDisplay {
@@ -90,16 +109,6 @@
       overflow-wrap: normal;
     }
 
-    #pageNumberDisplay {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      font-size: 18px;
-      color: var(--accent-color);
-      user-select: none;
-      z-index: 1000;
-    }
-
     .controls {
       position: absolute;
       bottom: 20px;
@@ -110,95 +119,81 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
+      z-index: 1000;
     }
 
     #speedControl {
-      width: 450px;
-      height: 30px;
+      width: 250px;
+      height: 15px;
       transform: scaleY(2.25);
       cursor: pointer;
     }
 
-    label[for="speedControl"] {
-      font-size: 18px;
-      margin-bottom: 5px;
-      color: var(--text-color);
-    }
-
     .slider-controls {
       position: absolute;
-      top: 60px;
-      right: 20px;
+      top: 5px;
+      right: 5px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 5px;
       background: var(--card-bg);
-      padding: 15px 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 5px 5px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
       user-select: none;
-      max-width: 200px;
+      max-width: 70px;
+      z-index: 1000;
     }
 
-    .slider-controls label {
-      font-size: 14px;
-      color: var(--text-color);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      user-select: none;
-    }
-
-    input[type="range"] {
-      width: 100%;
-      cursor: pointer;
-    }
+    .slider-controls label { font-size: 8px; color: var(--text-color); display:flex; flex-direction:column; gap:5px; }
 
     #pageSelector {
       display: none;
       position: absolute;
-      top: 70px;
-      left: 50%;
+      top: 10px;
+      left: 35%;
       transform: translateX(-50%);
       background: var(--card-bg);
-      padding: 10px 15px;
-      border-radius: 10px;
+      padding: 5px 10px;
+      border-radius: 5px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       user-select: none;
       display: flex;
       gap: 10px;
       align-items: center;
+      z-index: 1000;
     }
 
-    input[type="number"] {
-      padding: 8px;
-      border-radius: 8px;
-      font-size: 16px;
-      width: 120px;
-      border: 1px solid #ccc;
+    input[type="number"] { padding: 8px; border-radius: 8px; font-size: 16px; width: 120px; border: 1px solid #ccc; }
+
+    button { cursor: pointer; }
+
+    /* Virheilmoitus-overlay jos pdf.js ei löydy */
+    #errorOverlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.4);
+      z-index: 2000;
+    }
+    #errorBox {
+      background: var(--error-bg);
+      color: var(--error-text);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 560px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
     }
 
-    button {
-      cursor: pointer;
-      border: none;
-      border-radius: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: var(--accent-color);
-      color: #fff;
-      transition: transform 0.1s ease;
-      user-select: none;
-    }
-    button:hover {
-      transform: translateY(2px);
-    }
+    #errorBox a { color: inherit; text-decoration: underline; font-weight:600; }
   </style>
 </head>
 <body>
 
   <input type="file" id="pdfInput" accept="application/pdf" />
-  <button id="themeToggle">Vaihda teema</button>
-  <button id="pauseBtn">⏸</button>
+  <button id="themeToggle" aria-pressed="false">Vaihda teema</button>
 
   <div id="pageSelector">
     <input type="number" id="pageInput" placeholder="Sivunumero" min="1" />
@@ -206,37 +201,83 @@
   </div>
 
   <div class="slider-controls">
-    <label for="redControl">Väri punainen:
+    <label>Punainen:
       <input type="range" id="redControl" min="0" max="255" value="0" />
     </label>
-    <label for="greenControl">Väri vihreä:
+    <label>Vihreä:
       <input type="range" id="greenControl" min="0" max="255" value="0" />
     </label>
-    <label for="blueControl">Väri sininen:
+    <label>Sininen:
       <input type="range" id="blueControl" min="0" max="255" value="0" />
     </label>
-    <label for="opacityControl">Tekstin läpinäkyvyys:
+    <label>Läpinäkyvyys:
       <input type="range" id="opacityControl" min="0" max="100" value="100" />
     </label>
-    <label for="fontSizeControl">Tekstin koko:
+    <label>Koko:
       <input type="range" id="fontSizeControl" min="16" max="150" value="36" />
     </label>
   </div>
 
   <div id="textDisplay">Tähän ilmestyy teksti</div>
   <div id="pageNumberDisplay">Sivu: 0</div>
+  
+
+  <button id="pauseBtn" aria-pressed="false" title="Pysäytä / Jatka">⏸</button>
+
+  <button id="back10Btn" style="position:fixed; bottom:120px; left:20px; z-index:1100; padding:8px 12px; border-radius:8px; background:var(--accent-color); color:#fff; border:none;">← 10 sanaa</button>
 
   <div class="controls">
     <label for="speedControl">Nopeus: <span id="wpmValue">300</span> sanaa/min</label>
     <input type="range" id="speedControl" min="200" max="500" value="300" />
   </div>
 
-  <script src="pdf.min.js"></script>
-    <script>
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
-    // Asetetaan tumma teema oletukseksi
-    document.body.classList.add('dark-mode');
+  <!-- Virheilmoitus- overlay (piilotettu vakiona) -->
+  <div id="errorOverlay" role="dialog" aria-modal="true">
+    <div id="errorBox">
+      <h3>Kirjasto puuttuu: pdf.js</h3>
+      <p>pdf.js -kirjastoa (pdfjsLib) ei löytynyt. Tämä tarkoittaa, että PDF-ominaisuudet eivät toimi tässä ympäristössä.
+      Voit korjata tilanteen kahdella tavalla:</p>
+      <ol>
+        <li>Lataa pdf.js paikallisesti ja sijoita samaan kansioon tiedosto <code>pdf.min.js</code> ja <code>pdf.worker.min.js</code>.</li>
+        <li>Tai klikkaa alla olevaa painiketta ladataksesi pdf.js CDN:stä (vaatii internet-yhteyden).</li>
+      </ol>
+      <p>
+        <button id="tryLoadCdnBtn">Lataa pdf.js CDN:stä</button>
+        <button id="dismissErrorBtn">Sulje</button>
+      </p>
+      <p style="font-size:13px;color:#444;margin-top:6px">Jos haluat, lähetä minulle ilmoitus — voin sisällyttää kirjaston suoraan HTML:ään tai auttaa paikallisen asennuksen kanssa.</p>
+    </div>
+  </div>
 
+  <script>
+    // Yksinkertainen helper, joka yrittää varmistaa että pdfjsLib on käytettävissä.
+    function ensurePDFJS() {
+      return new Promise((resolve, reject) => {
+        if (window.pdfjsLib) return resolve(window.pdfjsLib);
+
+        // Jos ympäristössä ei ole pdf.min.js paikallisesti, tarjoa dynaaminen lataus CDN:stä
+        const cdnUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
+        const workerUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        let script = document.createElement('script');
+        script.src = cdnUrl;
+        script.async = true;
+        script.onload = () => {
+          // odota, että pdfjsLib on valmis
+          if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions = window.pdfjsLib.GlobalWorkerOptions || {};
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+            resolve(window.pdfjsLib);
+          } else {
+            reject(new Error('pdfjsLib latautui mutta ei asettunut window.pdfjsLib nimeen'));
+          }
+        };
+        script.onerror = () => reject(new Error('cdn-lataus epäonnistui'));
+        document.head.appendChild(script);
+      });
+    }
+
+    // UI-elementit
     const pdfInput = document.getElementById('pdfInput');
     const textDisplay = document.getElementById('textDisplay');
     const speedControl = document.getElementById('speedControl');
@@ -253,6 +294,10 @@
     const blueControl = document.getElementById('blueControl');
     const opacityControl = document.getElementById('opacityControl');
     const fontSizeControl = document.getElementById('fontSizeControl');
+
+    const errorOverlay = document.getElementById('errorOverlay');
+    const tryLoadCdnBtn = document.getElementById('tryLoadCdnBtn');
+    const dismissErrorBtn = document.getElementById('dismissErrorBtn');
 
     let wordsWithPage = [];
     let currentIndex = 0;
@@ -278,66 +323,90 @@
       clearInterval(intervalId);
       const intervalMs = 60000 / wpm;
       intervalId = setInterval(() => {
-        if (!isPaused) {
-          displayWord();
-        }
+        if (!isPaused) displayWord();
       }, intervalMs);
     }
 
     function togglePause() {
       isPaused = !isPaused;
       pauseBtn.textContent = isPaused ? '▶️' : '⏸';
+      pauseBtn.setAttribute('aria-pressed', String(isPaused));
     }
 
     async function loadPDF(file) {
-      const fileReader = new FileReader();
-      fileReader.onload = async function () {
-        const typedArray = new Uint8Array(this.result);
-        pdfDoc = await pdfjsLib.getDocument(typedArray).promise;
-        totalPages = pdfDoc.numPages;
-
-        wordsWithPage = [];
-        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-          const page = await pdfDoc.getPage(pageNum);
-          const content = await page.getTextContent();
-          content.items.forEach(item => {
-            const text = item.str.trim();
-            if (text) {
-              text.split(/\s+/).forEach(word => {
-                wordsWithPage.push({ word, page: pageNum });
-              });
-            }
-          });
+      try {
+        // varmista pdf.js saatavilla
+        const pdfjs = await ensurePDFJS();
+        // Huolehdi worker-src jos ei asetettu
+        if (!pdfjs.GlobalWorkerOptions || !pdfjs.GlobalWorkerOptions.workerSrc) {
+          pdfjs.GlobalWorkerOptions = pdfjs.GlobalWorkerOptions || {};
+          pdfjs.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
         }
 
-        currentIndex = 0;
-        displayWord();
-        startReading();
-        pageSelector.style.display = 'flex';
-      };
-      fileReader.readAsArrayBuffer(file);
+        const fileReader = new FileReader();
+        fileReader.onload = async function () {
+          const typedArray = new Uint8Array(this.result);
+          pdfDoc = await pdfjs.getDocument(typedArray).promise;
+          totalPages = pdfDoc.numPages;
+
+          wordsWithPage = [];
+          for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+            const page = await pdfDoc.getPage(pageNum);
+            const content = await page.getTextContent();
+            content.items.forEach(item => {
+              const text = item.str.trim();
+              if (text) text.split(/\s+/).forEach(word => wordsWithPage.push({ word, page: pageNum }));
+            });
+          }
+
+          currentIndex = 0;
+          displayWord();
+          startReading();
+          pageSelector.style.display = 'flex';
+        };
+        fileReader.readAsArrayBuffer(file);
+      } catch (err) {
+        console.error('loadPDF failed:', err);
+        showError(`PDF-kirjaston lataus epäonnistui: ${err.message}`);
+      }
     }
 
+    function showError(message) {
+      // Näytä virheilmoitus, ja ota käyttöön CDN-lataus -painike
+      errorOverlay.style.display = 'flex';
+      // Voit lisätä viestin virheilmoitukseen jos haluat; pidetään yksinkertaisena
+      console.warn(message);
+    }
+
+    // Yritä heti varmistaa pdfjs; jos ei löydy, näytä virheilmoitus
+    (async function init() {
+      try {
+        await ensurePDFJS();
+        // jos onnistui, aseta dark-mode ja muut oletusasetukset
+        document.body.classList.add('dark-mode');
+      } catch (err) {
+        console.warn('pdfjs ei saatavilla:', err);
+        // Näytä overlay mutta anna käyttäjälle mahdollisuus yrittää CDN-latausta
+        errorOverlay.style.display = 'flex';
+      }
+    })();
+
+    // Tapahtumakytkennät
     speedControl.addEventListener('input', () => {
       wpm = Number(speedControl.value);
       wpmValue.textContent = wpm;
-      if (!isPaused) {
-        startReading();
-      }
+      if (!isPaused) startReading();
     });
 
-    pauseBtn.addEventListener('click', () => {
-      togglePause();
-    });
+    pauseBtn.addEventListener('click', togglePause);
 
     themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.toggle('dark-mode');
+      themeToggle.setAttribute('aria-pressed', String(isDark));
     });
 
     pdfInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        loadPDF(e.target.files[0]);
-      }
+      if (e.target.files.length > 0) loadPDF(e.target.files[0]);
     });
 
     goToPageBtn.addEventListener('click', () => {
@@ -351,6 +420,25 @@
           startReading();
         }
       }
+    });
+
+    tryLoadCdnBtn.addEventListener('click', async () => {
+      try {
+        tryLoadCdnBtn.disabled = true;
+        tryLoadCdnBtn.textContent = 'Ladataan...';
+        await ensurePDFJS();
+        errorOverlay.style.display = 'none';
+        document.body.classList.add('dark-mode');
+      } catch (err) {
+        alert('CDN-lataus epäonnistui. Tarkista internet-yhteys tai lataa pdf.min.js paikallisesti.');
+        console.error(err);
+        tryLoadCdnBtn.disabled = false;
+        tryLoadCdnBtn.textContent = 'Lataa pdf.js CDN:stä';
+      }
+    });
+
+    dismissErrorBtn.addEventListener('click', () => {
+      errorOverlay.style.display = 'none';
     });
 
     function updateTextStyles() {
@@ -370,6 +458,18 @@
     opacityControl.addEventListener('input', updateTextStyles);
     fontSizeControl.addEventListener('input', updateTextStyles);
 
+    // 10 sanaa taaksepäin (ala-nappi)
+    document.getElementById('back10Btn').addEventListener('click', () => {
+      currentIndex = Math.max(0, currentIndex - 10);
+      displayWord();
+    });
+
+    
+    document.getElementById('back10Btn').addEventListener('click', () => {
+      currentIndex = Math.max(0, currentIndex - 10);
+      displayWord();
+    });
+
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
         e.preventDefault();
@@ -379,4 +479,3 @@
   </script>
 </body>
 </html>
-
